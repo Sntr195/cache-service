@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package cache.v1;
+
+option go_package = "github.com/Sntr195/cache-service/gen/cache/v1;cachev1";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+service CacheService {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+
+  rpc Len(LenRequest) returns (LenResponse);
+  rpc Stats(StatsRequest) returns (StatsResponse);
+
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+message GetRequest {
+  string key = 1;
+  bool include_meta = 2;
+}
+
+message GetResponse {
+  bool found = 1;
+  bytes value = 2;
+
+  EntryMeta meta = 3;
+}
+
+message SetRequest {
+  string key = 1;
+  bytes value = 2;
+
+  google.protobuf.Duration ttl = 3;
+
+  bool keep_ttl = 4;
+}
+
+message SetResponse {
+  bool evicted = 1;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message DeleteResponse {
+  bool deleted = 1;
+}
+
+message LenRequest {}
+
+message LenResponse {
+  uint64 items = 1;
+}
+
+message StatsRequest {}
+
+message StatsResponse {
+  uint64 items = 1;
+  uint64 bytes = 2;
+
+  uint64 hits = 3;
+  uint64 misses = 4;
+  uint64 sets = 5;
+  uint64 deletes = 6;
+
+  uint64 evictions = 7;
+  uint64 expired = 8;
+
+  google.protobuf.Timestamp at = 9;
+}
+
+message EntryMeta {
+  google.protobuf.Timestamp expire_at = 1;
+
+  uint64 size_bytes = 2;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+  }
+  Status status = 1;
+  string message = 2;
+}
